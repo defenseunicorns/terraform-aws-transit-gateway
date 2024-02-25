@@ -82,3 +82,19 @@ variable "handle_existing_tgw" {
   type        = bool
   default     = false
 }
+
+variable "create_transit_gateway" {
+  description = "Whether to create a transit gateway"
+  type        = bool
+  default     = false
+}
+
+variable "target_transit_gateway_tag_name" {
+  description = "The value of the Name tag"
+  type        = string
+}
+
+variable "peered_transit_gateway_tag_name" {
+  description = "The value of the Name tag"
+  type = string
+}

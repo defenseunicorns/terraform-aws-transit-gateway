@@ -35,11 +35,11 @@ variable "routes_config" {
 }
 
 variable "peered_route_table_id" {
-    description = "The id of the main route table of the transit gateway peer (the tgw on the other side of the tgw that our VPC is attached)"
-    default = ""
+  description = "The id of the main route table of the transit gateway peer (the tgw on the other side of the tgw that our VPC is attached)"
+  default     = ""
 }
 
 variable "peered_attachment_id" {
-    description = "The id of the attachment of type Peering that is attached to the tgw on the other side of the tgs that our VPC is attached"
-    default = ""
+  description = "The id of the attachment of type Peering that is attached to the tgw on the other side of the tgs that our VPC is attached"
+  default     = ""
 }

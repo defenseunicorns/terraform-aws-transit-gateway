@@ -63,7 +63,7 @@ module "setup transit_gateways_and_peering" {
 }
 
 module "transit_gateway_attach_vpc_and_route" {
-  source = "../.."
+  source                          = "../.."
   vpc_id                          = module.vpc.vpc_id
   subnet_ids                      = module.vpc.private_subnets
   tags                            = local.tags

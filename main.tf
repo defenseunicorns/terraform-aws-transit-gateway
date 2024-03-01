@@ -61,8 +61,8 @@ resource "aws_ec2_transit_gateway_route" "route" {
 data "aws_ec2_transit_gateway_peering_attachment" "peering_attachment" {
   filter {
     name   = "Name"
-    values =  [ var.target_transit_gateway_tag_name ]
-  
+    values = [var.target_transit_gateway_tag_name]
+
   }
 }
 
@@ -72,14 +72,14 @@ resource "aws_ec2_transit_gateway_route" "route" {
   destination_cidr_block         = each.value["route_to_cidr_block"]
   transit_gateway_route_table_id = data.aws_ec2_transit_gateway_route_table.route_table.transit_gateway_id
   transit_gateway_attachment_id  = data.aws_ec2_transit_gateway_peering_attachment.peering_attachment.id
-} 
+}
 
 # TODO - figure out route propagation
 # Feed in static routes for main route table used with the attachment of the other transit gateway peering
 resource "aws_ec2_transit_gateway_route" "route" {
-  for_each                       = var.routes_config
-  destination_cidr_block         = each.value["route_to_cidr_block"]
+  for_each               = var.routes_config
+  destination_cidr_block = each.value["route_to_cidr_block"]
   # TODO - figure out how to query for peered_route_table_id that may exist in a separate account
   transit_gateway_route_table_id = length(var.peered_route_table_id) > 0 ? var.peered_route_table_id : "TBD"
   transit_gateway_attachment_id  = length(var.peered_attachment_id) > 0 ? var.peered_attachment_id : data.aws_ec2_transit_gateway_peering_attachment.peering_attachment.peer_transit_gateway_id
-} 
+}

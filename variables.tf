@@ -43,8 +43,3 @@ variable "peered_attachment_id" {
     description = "The id of the attachment of type Peering that is attached to the tgw on the other side of the tgs that our VPC is attached"
     default = ""
 }
-
-variable "peered_transit_gateway_tag_name" {
-  description = "The value of the Name tag"
-  type = string
-}

@@ -69,5 +69,4 @@ module "transit_gateway_attach_vpc_and_route" {
   tags                            = local.tags
   vpc_route_table_id              = module.vpc.vpc_main_route_table_id
   target_transit_gateway_tag_name = var.target_transit_gateway_tag_name
-  peered_transit_gateway_tag_name = var.peered_transit_gateway_tag_name
 }

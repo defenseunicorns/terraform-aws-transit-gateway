@@ -33,4 +33,11 @@ resource "aws_ec2_transit_gateway_peering_attachment" "peering_attachment_transi
   peer_transit_gateway_id = module.transit_gateway_b.transit_gateway_id
 }
 
-# TODO - create peering attachment acceptor
+# TODO - validate create peering attachment acceptor
+resource "aws_ec2_transit_gateway_peering_attachment_accepter" "accept_peering_attachment_transit_gateway_a_to_b" {
+  transit_gateway_attachment_id = module.transit_gateway_b.transit_gateway_id
+
+  tags = {
+    Name = "Example for accepting a peering attachment (in the same account - not cross-account)"
+  }
+}

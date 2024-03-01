@@ -10,7 +10,7 @@ data "aws_ec2_transit_gateway_route_table" "route_table" {
 # Create a TGW attachment to attach the VPC to the existing TGW
 resource "aws_ec2_transit_gateway_vpc_attachment" "tgw_vpc_attachment" {
   subnet_ids         = var.subnet_ids
-  transit_gateway_id = try(data.aws_ec2_transit_gateway_route_table.route_table.transit_gateway_id, "")
+  transit_gateway_id = data.aws_ec2_transit_gateway_route_table.route_table.transit_gateway_id
   vpc_id             = var.vpc_id
   tags = merge(
     {
@@ -24,12 +24,12 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "tgw_vpc_attachment" {
 resource "aws_route" "route_to_tgw_rtb_for_this_vpc" {
   route_table_id         = var.vpc_route_table_id
   destination_cidr_block = "0.0.0.0/0"
-  transit_gateway_id     = try(data.aws_ec2_transit_gateway_route_table.route_table.transit_gateway_id, "")
+  transit_gateway_id     = data.aws_ec2_transit_gateway_route_table.route_table.transit_gateway_id
 }
 
 # Create a new route table to be used for VPC egress
 resource "aws_ec2_transit_gateway_route_table" "transit_gateway_route_table_for_vpc_egress" {
-  transit_gateway_id = try(data.aws_ec2_transit_gateway_route_table.route_table.transit_gateway_id, "")
+  transit_gateway_id = data.aws_ec2_transit_gateway_route_table.route_table.transit_gateway_id
   tags = merge(
     {
       "Name" = "${var.vpc_id}-TGW-RTB",
@@ -40,6 +40,12 @@ resource "aws_ec2_transit_gateway_route_table" "transit_gateway_route_table_for_
 
 # Create a route table association to the transit gateway for the VPC attachment
 resource "aws_ec2_transit_gateway_route_table_association" "tgw_rtb_for_vpc_association" {
+  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.tgw_vpc_attachment.id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.transit_gateway_route_table_for_vpc_egress.id
+}
+
+# Create a route table propagation to the transit gateway for the VPC attachment
+resource "aws_ec2_transit_gateway_route_table_propagation" "tgw_rtb_for_vpc_propagation" {
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.tgw_vpc_attachment.id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.transit_gateway_route_table_for_vpc_egress.id
 }

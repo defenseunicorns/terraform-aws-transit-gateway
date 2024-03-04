@@ -1,85 +1,112 @@
-
-# Query the main route table for the transit gateway
-data "aws_ec2_transit_gateway_route_table" "route_table" {
-  filter {
-    name   = "tag:Name"
-    values = [var.target_transit_gateway_tag_name]
-  }
-}
-
-# Create a TGW attachment to attach the VPC to the existing TGW
-resource "aws_ec2_transit_gateway_vpc_attachment" "tgw_vpc_attachment" {
-  subnet_ids         = var.subnet_ids
-  transit_gateway_id = data.aws_ec2_transit_gateway_route_table.route_table.transit_gateway_id
-  vpc_id             = var.vpc_id
+locals {
   tags = merge(
+    var.tags,
     {
-      "Name" = var.vpc_id,
-    },
-    var.tags
+      RootTFModule = replace(basename(path.cwd), "_", "-") # tag names based on the directory name
+      ManagedBy    = "Terraform"
+      Repo         = "https://github.com/defenseunicorns/terraform-aws-transit-gateway"
+    }
   )
 }
 
-# route all VPC traffic to the TGW
-resource "aws_route" "route_to_tgw_rtb_for_this_vpc" {
-  route_table_id         = var.vpc_route_table_id
-  destination_cidr_block = "0.0.0.0/0"
-  transit_gateway_id     = data.aws_ec2_transit_gateway_route_table.route_table.transit_gateway_id
-}
-
-# Create a new route table to be used for VPC egress
-resource "aws_ec2_transit_gateway_route_table" "transit_gateway_route_table_for_vpc_egress" {
-  transit_gateway_id = data.aws_ec2_transit_gateway_route_table.route_table.transit_gateway_id
-  tags = merge(
-    {
-      "Name" = "${var.vpc_id}-TGW-RTB",
-    },
-    var.tags
+locals {
+  transit_gateway_id = var.existing_transit_gateway_id != null && var.existing_transit_gateway_id != "" ? var.existing_transit_gateway_id : (
+    var.create_transit_gateway ? aws_ec2_transit_gateway.this[0].id : null
   )
+  transit_gateway_route_table_id = var.existing_transit_gateway_route_table_id != null && var.existing_transit_gateway_route_table_id != "" ? var.existing_transit_gateway_route_table_id : (
+    var.create_transit_gateway_route_table ? aws_ec2_transit_gateway_route_table.this[0].id : null
+  )
+  # NOTE: This is the same logic as local.transit_gateway_id but we cannot reuse that local in the data source or
+  # we get the dreaded error: "count" value depends on resource attributes
+  lookup_transit_gateway = ((var.existing_transit_gateway_id != null && var.existing_transit_gateway_id != "") || var.create_transit_gateway)
+}
+resource "aws_ec2_transit_gateway" "this" {
+  count                           = var.create_transit_gateway ? 1 : 0
+  description                     = var.transit_gateway_description == "" ? "Transit Gateway" : var.transit_gateway_description
+  auto_accept_shared_attachments  = var.auto_accept_shared_attachments
+  default_route_table_association = var.default_route_table_association
+  default_route_table_propagation = var.default_route_table_propagation
+  dns_support                     = var.dns_support
+  vpn_ecmp_support                = var.vpn_ecmp_support
+  tags                            = local.tags
+  transit_gateway_cidr_blocks     = var.transit_gateway_cidr_blocks
 }
 
-# Create a route table association to the transit gateway for the VPC attachment
-resource "aws_ec2_transit_gateway_route_table_association" "tgw_rtb_for_vpc_association" {
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.tgw_vpc_attachment.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.transit_gateway_route_table_for_vpc_egress.id
+resource "aws_ec2_transit_gateway_route_table" "this" {
+  count              = var.create_transit_gateway_route_table ? 1 : 0
+  transit_gateway_id = local.transit_gateway_id
+  tags               = local.tags
 }
 
-# Create a route table propagation to the transit gateway for the VPC attachment
-resource "aws_ec2_transit_gateway_route_table_propagation" "tgw_rtb_for_vpc_propagation" {
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.tgw_vpc_attachment.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.transit_gateway_route_table_for_vpc_egress.id
+# Need to find out if VPC is in same account as Transit Gateway.
+# See resource "aws_ec2_transit_gateway_vpc_attachment" below.
+data "aws_ec2_transit_gateway" "this" {
+  count = local.lookup_transit_gateway ? 1 : 0
+  id    = local.transit_gateway_id
 }
 
-# Feed in a vpc attachment id and the cidr of the route to create; get transit gateway id from main transit gateway route table
-resource "aws_ec2_transit_gateway_route" "route" {
-  for_each                       = var.routes_config
-  destination_cidr_block         = each.value["route_to_cidr_block"]
-  transit_gateway_route_table_id = data.aws_ec2_transit_gateway_route_table.transit_gateway_route_table_for_vpc_egress.transit_gateway_id
-  transit_gateway_attachment_id  = each.value["attachment_id"]
+data "aws_vpc" "this" {
+  for_each = var.create_transit_gateway_vpc_attachment && var.config != null ? var.config : {}
+  id       = each.value["vpc_id"]
 }
 
-data "aws_ec2_transit_gateway_peering_attachment" "peering_attachment" {
-  filter {
-    name   = "Name"
-    values = [var.target_transit_gateway_tag_name]
+resource "aws_ec2_transit_gateway_vpc_attachment" "this" {
+  for_each               = var.create_transit_gateway_vpc_attachment && var.config != null ? var.config : {}
+  transit_gateway_id     = local.transit_gateway_id
+  vpc_id                 = each.value["vpc_id"]
+  subnet_ids             = each.value["subnet_ids"]
+  appliance_mode_support = var.vpc_attachment_appliance_mode_support
+  dns_support            = var.vpc_attachment_dns_support
+  ipv6_support           = var.vpc_attachment_ipv6_support
+  tags                   = local.tags
 
-  }
+  # transit_gateway_default_route_table_association and transit_gateway_default_route_table_propagation
+  # must be set to `false` if the VPC is in the same account as the Transit Gateway, and `null` otherwise
+  # https://github.com/terraform-providers/terraform-provider-aws/issues/13512
+  # https://github.com/terraform-providers/terraform-provider-aws/issues/8383
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ec2_transit_gateway_vpc_attachment
+  transit_gateway_default_route_table_association = data.aws_ec2_transit_gateway.this[0].owner_id == data.aws_vpc.this[each.key].owner_id ? false : null
+  transit_gateway_default_route_table_propagation = data.aws_ec2_transit_gateway.this[0].owner_id == data.aws_vpc.this[each.key].owner_id ? false : null
 }
 
-# Feed in static routes for main route table used with peering attachment
-resource "aws_ec2_transit_gateway_route" "route" {
-  for_each                       = var.routes_config
-  destination_cidr_block         = each.value["route_to_cidr_block"]
-  transit_gateway_route_table_id = data.aws_ec2_transit_gateway_route_table.route_table.transit_gateway_id
-  transit_gateway_attachment_id  = data.aws_ec2_transit_gateway_peering_attachment.peering_attachment.id
+# Allow traffic from the VPC attachments to the Transit Gateway
+resource "aws_ec2_transit_gateway_route_table_association" "this" {
+  for_each                       = var.create_transit_gateway_route_table_association && var.config != null ? var.config : {}
+  transit_gateway_attachment_id  = each.value["transit_gateway_vpc_attachment_id"] != null ? each.value["transit_gateway_vpc_attachment_id"] : aws_ec2_transit_gateway_vpc_attachment.this[each.key]["id"]
+  transit_gateway_route_table_id = local.transit_gateway_route_table_id
 }
 
-# TODO - figure out route propagation
-# Feed in static routes for main route table used with the attachment of the other transit gateway peering
-resource "aws_ec2_transit_gateway_route" "route" {
-  for_each               = var.routes_config
-  destination_cidr_block = each.value["route_to_cidr_block"]
-  # TODO - figure out how to query for peered_route_table_id that may exist in a separate account
-  transit_gateway_route_table_id = length(var.peered_route_table_id) > 0 ? var.peered_route_table_id : "TBD"
-  transit_gateway_attachment_id  = length(var.peered_attachment_id) > 0 ? var.peered_attachment_id : data.aws_ec2_transit_gateway_peering_attachment.peering_attachment.peer_transit_gateway_id
+# Allow traffic from the Transit Gateway to the VPC attachments
+# Propagations will create propagated routes
+resource "aws_ec2_transit_gateway_route_table_propagation" "this" {
+  for_each                       = var.create_transit_gateway_propagation && var.config != null ? var.config : {}
+  transit_gateway_attachment_id  = each.value["transit_gateway_vpc_attachment_id"] != null ? each.value["transit_gateway_vpc_attachment_id"] : aws_ec2_transit_gateway_vpc_attachment.this[each.key]["id"]
+  transit_gateway_route_table_id = local.transit_gateway_route_table_id
+}
+
+# Static Transit Gateway routes
+# Static routes have a higher precedence than propagated routes
+# https://docs.aws.amazon.com/vpc/latest/tgw/how-transit-gateways-work.html
+# https://docs.aws.amazon.com/vpc/latest/tgw/tgw-route-tables.html
+module "transit_gateway_route" {
+  source                         = "./modules/transit_gateway_route"
+  for_each                       = var.config != null ? var.config : {}
+  transit_gateway_attachment_id  = each.value["transit_gateway_vpc_attachment_id"] != null ? each.value["transit_gateway_vpc_attachment_id"] : aws_ec2_transit_gateway_vpc_attachment.this[each.key]["id"]
+  transit_gateway_route_table_id = local.transit_gateway_route_table_id
+  route_config                   = each.value["static_routes"] != null ? each.value["static_routes"] : []
+
+  depends_on = [aws_ec2_transit_gateway_vpc_attachment.this, aws_ec2_transit_gateway_route_table.this]
+}
+
+# Create routes in the subnets' route tables to route traffic from subnets to the Transit Gateway VPC attachments
+# Only route to VPCs of the environments defined in `route_to` attribute
+module "subnet_route" {
+  source                  = "./modules/subnet_route"
+  for_each                = var.create_transit_gateway_vpc_attachment && var.config != null ? var.config : {}
+  transit_gateway_id      = local.transit_gateway_id
+  route_table_ids         = each.value["subnet_route_table_ids"] != null ? each.value["subnet_route_table_ids"] : []
+  destination_cidr_blocks = each.value["route_to_cidr_blocks"] != null ? each.value["route_to_cidr_blocks"] : ([for i in setintersection(keys(var.config), (each.value["route_to"] != null ? each.value["route_to"] : [])) : var.config[i]["vpc_cidr"]])
+  route_keys_enabled      = var.route_keys_enabled
+
+  depends_on = [aws_ec2_transit_gateway.this, data.aws_ec2_transit_gateway.this, aws_ec2_transit_gateway_vpc_attachment.this]
 }

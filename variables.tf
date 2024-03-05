@@ -4,6 +4,18 @@ variable "auto_accept_shared_attachments" {
   description = "Whether resource attachment requests are automatically accepted. Valid values: `disable`, `enable`. Default value: `disable`"
 }
 
+variable "transit_gateway_name" {
+  type        = string
+  description = "The name of the Transit Gateway"
+  default     = ""
+}
+
+variable "transit_gateway_route_table_name" {
+  type        = string
+  description = "The name of the Transit Gateway Route Table"
+  default     = ""
+}
+
 variable "default_route_table_association" {
   type        = string
   default     = "disable"
@@ -48,6 +60,7 @@ variable "vpc_attachment_ipv6_support" {
 
 variable "config" {
   type = map(object({
+    vpc_name                          = string
     vpc_id                            = string
     vpc_cidr                          = string
     subnet_ids                        = set(string)

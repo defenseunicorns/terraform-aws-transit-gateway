@@ -9,6 +9,15 @@ locals {
   )
 }
 
+resource "random_id" "this" {
+  # if either of these are not set, generate a random suffix
+  count = (
+    (var.transit_gateway_name != null && var.transit_gateway_name != "") ||
+    (var.transit_gateway_route_table_name != null && var.transit_gateway_route_table_name != "")
+  ) ? 1 : 0
+  byte_length = 8
+}
+
 locals {
   transit_gateway_id = var.existing_transit_gateway_id != null && var.existing_transit_gateway_id != "" ? var.existing_transit_gateway_id : (
     var.create_transit_gateway ? aws_ec2_transit_gateway.this[0].id : null
@@ -16,6 +25,11 @@ locals {
   transit_gateway_route_table_id = var.existing_transit_gateway_route_table_id != null && var.existing_transit_gateway_route_table_id != "" ? var.existing_transit_gateway_route_table_id : (
     var.create_transit_gateway_route_table ? aws_ec2_transit_gateway_route_table.this[0].id : null
   )
+
+  transit_gateway_name                       = var.transit_gateway_name != null && var.transit_gateway_name != "" ? var.transit_gateway_name : try("tgw-${random_id.this[0].hex}", "")
+  transit_gateway_route_table_name           = var.transit_gateway_route_table_name != null && var.transit_gateway_route_table_name != "" ? var.transit_gateway_route_table_name : try("tgw-rt-${random_id.this[0].hex}", "")
+  transit_gateway_vpc_attachment_name_prefix = lookup(data.aws_ec2_transit_gateway.this[0].tags, "Name", local.transit_gateway_name)
+
   # NOTE: This is the same logic as local.transit_gateway_id but we cannot reuse that local in the data source or
   # we get the dreaded error: "count" value depends on resource attributes
   lookup_transit_gateway = ((var.existing_transit_gateway_id != null && var.existing_transit_gateway_id != "") || var.create_transit_gateway)
@@ -28,14 +42,26 @@ resource "aws_ec2_transit_gateway" "this" {
   default_route_table_propagation = var.default_route_table_propagation
   dns_support                     = var.dns_support
   vpn_ecmp_support                = var.vpn_ecmp_support
-  tags                            = local.tags
   transit_gateway_cidr_blocks     = var.transit_gateway_cidr_blocks
+
+  tags = merge(
+    local.tags,
+    {
+      Name = local.transit_gateway_name
+    }
+  )
 }
 
 resource "aws_ec2_transit_gateway_route_table" "this" {
   count              = var.create_transit_gateway_route_table ? 1 : 0
   transit_gateway_id = local.transit_gateway_id
-  tags               = local.tags
+
+  tags = merge(
+    local.tags,
+    {
+      Name = local.transit_gateway_route_table_name
+    }
+  )
 }
 
 # Need to find out if VPC is in same account as Transit Gateway.
@@ -58,7 +84,13 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "this" {
   appliance_mode_support = var.vpc_attachment_appliance_mode_support
   dns_support            = var.vpc_attachment_dns_support
   ipv6_support           = var.vpc_attachment_ipv6_support
-  tags                   = local.tags
+
+  tags = merge(
+    local.tags,
+    {
+      Name = join("_", compact([local.transit_gateway_vpc_attachment_name_prefix, coalesce(each.value["vpc_name"], each.value["vpc_id"])]))
+    }
+  )
 
   # transit_gateway_default_route_table_association and transit_gateway_default_route_table_propagation
   # must be set to `false` if the VPC is in the same account as the Transit Gateway, and `null` otherwise

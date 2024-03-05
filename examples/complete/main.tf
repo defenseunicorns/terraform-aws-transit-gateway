@@ -1,12 +1,3 @@
-provider "aws" {
-  region = var.region
-}
-
-data "aws_partition" "current" {}
-
-data "aws_caller_identity" "current" {}
-
-
 data "aws_availability_zones" "available" {
   filter {
     name   = "opt-in-status"
@@ -14,59 +5,192 @@ data "aws_availability_zones" "available" {
   }
 }
 
+
 resource "random_id" "default" {
   byte_length = 2
 }
 
 locals {
-  azs      = [for az_name in slice(data.aws_availability_zones.available.names, 0, min(length(data.aws_availability_zones.available.names), var.num_azs)) : az_name]
-  vpc_name = "${var.name_prefix}-${lower(random_id.default.hex)}"
+  vpc_name             = "${var.name_prefix}-${lower(random_id.default.hex)}"
+  transit_gateway_name = "${var.name_prefix}-tgw-${random_id.default.hex}"
   tags = merge(
     var.tags,
     {
       RootTFModule = replace(basename(path.cwd), "_", "-") # tag names based on the directory name
       ManagedBy    = "Terraform"
-      Repo         = "https://github.com/defenseunicorns/terraform-aws-eks"
+      Repo         = "https://github.com/defenseunicorns/terraform-aws-transit-gateway"
     }
   )
 }
 
-module "vpc" {
+
+################################################################################
+# VPC
+################################################################################
+
+locals {
+  azs = [for az_name in slice(data.aws_availability_zones.available.names, 0, min(length(data.aws_availability_zones.available.names), var.num_azs)) : az_name]
+}
+
+module "vpc_prod" {
   source = "git::https://github.com/defenseunicorns/terraform-aws-vpc.git?ref=v0.1.5"
 
-  name                  = local.vpc_name
-  vpc_cidr              = var.vpc_cidr
-  secondary_cidr_blocks = var.secondary_cidr_blocks
-  azs                   = local.azs
-  public_subnets        = []
-  private_subnets       = [for k, v in module.vpc.azs : cidrsubnet(module.vpc.vpc_cidr_block, 5, k + 4)]
-  database_subnets      = [for k, v in module.vpc.azs : cidrsubnet(module.vpc.vpc_cidr_block, 5, k + 8)]
-  intra_subnets         = [for k, v in module.vpc.azs : cidrsubnet(element(module.vpc.vpc_secondary_cidr_blocks, 0), 5, k)]
-  single_nat_gateway    = false
-  enable_nat_gateway    = false
+  name                         = "prod-${local.vpc_name}"
+  vpc_cidr                     = "10.200.0.0/16"
+  secondary_cidr_blocks        = ["100.64.0.0/16"]
+  azs                          = local.azs
+  public_subnets               = [for k, v in module.vpc_prod.azs : cidrsubnet(module.vpc_prod.vpc_cidr_block, 5, k)]
+  private_subnets              = [for k, v in module.vpc_prod.azs : cidrsubnet(module.vpc_prod.vpc_cidr_block, 5, k + 4)]
+  database_subnets             = [for k, v in module.vpc_prod.azs : cidrsubnet(module.vpc_prod.vpc_cidr_block, 5, k + 8)]
+  intra_subnets                = [for k, v in module.vpc_prod.azs : cidrsubnet(element(module.vpc_prod.vpc_secondary_cidr_blocks, 0), 5, k)]
+  single_nat_gateway           = true
+  enable_nat_gateway           = true
+  create_default_vpc_endpoints = false
 
   private_subnet_tags = {
+    "kubernetes.io/cluster/prod"      = "shared"
     "kubernetes.io/role/internal-elb" = 1
   }
   create_database_subnet_group = true
 
-  instance_tenancy                  = "default"
-  vpc_flow_log_permissions_boundary = var.iam_role_permissions_boundary
+  instance_tenancy = "default"
 
   tags = local.tags
 }
 
-module "setup transit_gateways_and_peering" {
-  count  = var.create_transit_gateway ? 1 : 0
-  source = "../transit-gateway-peering"
-  region = var.region
+module "vpc_dev" {
+  source = "git::https://github.com/defenseunicorns/terraform-aws-vpc.git?ref=v0.1.5"
+
+  name                         = "dev-${local.vpc_name}"
+  vpc_cidr                     = "10.201.0.0/16"
+  secondary_cidr_blocks        = ["100.64.0.0/16"]
+  azs                          = local.azs
+  public_subnets               = [for k, v in module.vpc_dev.azs : cidrsubnet(module.vpc_dev.vpc_cidr_block, 5, k)]
+  private_subnets              = [for k, v in module.vpc_dev.azs : cidrsubnet(module.vpc_dev.vpc_cidr_block, 5, k + 4)]
+  database_subnets             = [for k, v in module.vpc_dev.azs : cidrsubnet(module.vpc_dev.vpc_cidr_block, 5, k + 8)]
+  intra_subnets                = [for k, v in module.vpc_dev.azs : cidrsubnet(element(module.vpc_dev.vpc_secondary_cidr_blocks, 0), 5, k)]
+  single_nat_gateway           = true
+  enable_nat_gateway           = true
+  create_default_vpc_endpoints = false
+
+  private_subnet_tags = {
+    "kubernetes.io/cluster/dev"       = "shared"
+    "kubernetes.io/role/internal-elb" = 1
+  }
+  create_database_subnet_group = true
+
+  instance_tenancy = "default"
+
+  tags = local.tags
 }
 
-module "transit_gateway_attach_vpc_and_route" {
-  source                          = "../.."
-  vpc_id                          = module.vpc.vpc_id
-  subnet_ids                      = module.vpc.private_subnets
-  tags                            = local.tags
-  vpc_route_table_id              = module.vpc.vpc_main_route_table_id
-  target_transit_gateway_tag_name = var.target_transit_gateway_tag_name
+################################################################################
+# New Transit Gateway
+# deploy new TGW and route two vpc_prod and vpc_dev together
+################################################################################
+
+locals {
+  new_transit_gateway_config = {
+    prod = {
+      vpc_name                          = "prod-${local.vpc_name}"
+      vpc_id                            = module.vpc_prod.vpc_id
+      vpc_cidr                          = module.vpc_prod.vpc_cidr_block
+      subnet_ids                        = module.vpc_prod.private_subnets
+      subnet_route_table_ids            = module.vpc_prod.private_route_table_ids
+      route_to                          = ["dev"]
+      route_to_cidr_blocks              = null
+      transit_gateway_vpc_attachment_id = null
+      static_routes = [
+        {
+          blackhole              = false
+          destination_cidr_block = "0.0.0.0/0"
+        },
+        {
+          blackhole              = false
+          destination_cidr_block = module.vpc_prod.vpc_cidr_block
+        }
+      ]
+    },
+
+    dev = {
+      vpc_name                          = "dev-${local.vpc_name}"
+      vpc_id                            = module.vpc_dev.vpc_id
+      vpc_cidr                          = module.vpc_dev.vpc_cidr_block
+      subnet_ids                        = module.vpc_dev.private_subnets
+      subnet_route_table_ids            = null
+      route_to                          = []
+      route_to_cidr_blocks              = null
+      transit_gateway_vpc_attachment_id = null
+      static_routes = [
+        {
+          blackhole              = false
+          destination_cidr_block = module.vpc_dev.vpc_cidr_block
+        }
+      ]
+    }
+  }
+}
+
+
+module "new_transit_gateway" {
+  source = "../.."
+
+  create_transit_gateway                         = true
+  create_transit_gateway_route_table             = true
+  create_transit_gateway_vpc_attachment          = true
+  create_transit_gateway_route_table_association = true
+  create_transit_gateway_propagation             = false
+  transit_gateway_name                           = local.transit_gateway_name
+  config                                         = local.new_transit_gateway_config
+}
+
+################################################################################
+# Existing Transit Gateway
+# use existing TGW to add a new route to vpc_dev
+################################################################################
+
+locals {
+  dev_tgw_route_table_only_and_existing_tgw_config = {
+    dev = {
+      vpc_name                          = "dev-${local.vpc_name}"
+      vpc_id                            = module.vpc_dev.vpc_id
+      vpc_cidr                          = module.vpc_dev.vpc_cidr_block
+      subnet_ids                        = module.vpc_dev.private_subnets
+      subnet_route_table_ids            = module.vpc_dev.private_route_table_ids
+      route_to                          = []
+      route_to_cidr_blocks              = null
+      transit_gateway_vpc_attachment_id = module.new_transit_gateway.transit_gateway_vpc_attachment_ids["dev"]
+      static_routes = [
+        {
+          blackhole              = false
+          destination_cidr_block = module.vpc_prod.vpc_cidr_block
+        },
+        {
+          blackhole              = false
+          destination_cidr_block = "0.0.0.0/0"
+        },
+      ]
+    }
+  }
+}
+
+data "aws_ec2_transit_gateway" "existing" {
+  filter {
+    name   = "tag:Name"
+    values = [local.transit_gateway_name]
+  }
+}
+
+module "existing_transit_gateway_new_route_table" {
+  source = "../.."
+
+  create_transit_gateway                         = false
+  existing_transit_gateway_id                    = data.aws_ec2_transit_gateway.existing.id
+  create_transit_gateway_route_table             = true
+  transit_gateway_route_table_name               = "dev-${local.vpc_name}-route-table"
+  create_transit_gateway_vpc_attachment          = false # don't need this, already attached to the TGW
+  create_transit_gateway_route_table_association = true
+  create_transit_gateway_propagation             = false
+
+  config = local.dev_tgw_route_table_only_and_existing_tgw_config
 }

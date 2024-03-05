@@ -163,7 +163,7 @@ locals {
       static_routes = [
         {
           blackhole              = false
-          destination_cidr_block = module.vpc_prod.vpc_cidr_block
+          destination_cidr_block = module.vpc_dev.vpc_cidr_block
         },
         {
           blackhole              = false
@@ -189,7 +189,7 @@ module "existing_transit_gateway_new_route_table" {
   create_transit_gateway_route_table             = true
   transit_gateway_route_table_name               = "dev-${local.vpc_name}-route-table"
   create_transit_gateway_vpc_attachment          = false # don't need this, already attached to the TGW
-  create_transit_gateway_route_table_association = true
+  create_transit_gateway_route_table_association = false
   create_transit_gateway_propagation             = false
 
   config = local.dev_tgw_route_table_only_and_existing_tgw_config

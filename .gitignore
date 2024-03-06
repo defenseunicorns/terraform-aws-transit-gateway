@@ -2,15 +2,16 @@
 .idea/
 .DS_Store
 .vscode
-*.
+
+
 # Local .terraform directories
-**/.terraform/*
-
-**/.terraform.lock.hcl
-
+.terraform/
+*.terraform.*
 # .tfstate files
 *.tfstate
 *.tfstate.*
+
+*.terraform.lock.hcl
 
 # Crash log files
 crash.log
@@ -22,7 +23,12 @@ crash.*.log
 # to change depending on the environment.
 *.tfvars
 *.tfvars.json
-!fixtures*.tfvars
+
+# Except ones that we do want to commit because they are used for automated tests
+!examples/complete/fixtures.common.tfvars
+!examples/complete/fixtures.insecure.tfvars
+!examples/complete/fixtures.secure.tfvars
+!modules/cloudtrail/examples/complete/fixtures.create-bucket.tfvars
 
 # Ignore override files as they are usually used to override resources locally and so
 # are not checked in
@@ -34,9 +40,6 @@ override.tf.json
 # Include override files you do wish to add to version control using negated pattern
 # !example_override.tf
 
-# Ignore Terraform state files
-backend.tf
-
 # Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
 # example: *tfplan*
 
@@ -44,4 +47,17 @@ backend.tf
 .terraformrc
 terraform.rc
 
-ignore
+# Ignore Terraform cache
+.terragrunt-cache*
+
+# Ignore Terraform state files
+backend.tf
+
+# Ignore Checkov external module downloads
+.external_modules
+
+examples/zarf-complete-example/build
+
+#ignore lamba builds json file created from deploying lambda resource
+
+**/ignore

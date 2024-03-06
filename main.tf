@@ -10,11 +10,6 @@ locals {
 }
 
 resource "random_id" "this" {
-  # if either of these are not set, generate a random suffix
-  count = (
-    (var.transit_gateway_name != null && var.transit_gateway_name != "") ||
-    (var.transit_gateway_route_table_name != null && var.transit_gateway_route_table_name != "")
-  ) ? 1 : 0
   byte_length = 8
 }
 
@@ -26,8 +21,8 @@ locals {
     var.create_transit_gateway_route_table ? aws_ec2_transit_gateway_route_table.this[0].id : null
   )
 
-  transit_gateway_name                       = var.transit_gateway_name != null && var.transit_gateway_name != "" ? var.transit_gateway_name : try("tgw-${random_id.this[0].hex}", "")
-  transit_gateway_route_table_name           = var.transit_gateway_route_table_name != null && var.transit_gateway_route_table_name != "" ? var.transit_gateway_route_table_name : try("tgw-rt-${random_id.this[0].hex}", "")
+  transit_gateway_name                       = var.transit_gateway_name != null && var.transit_gateway_name != "" ? var.transit_gateway_name : try("tgw-${random_id.this.hex}", "")
+  transit_gateway_route_table_name           = var.transit_gateway_route_table_name != null && var.transit_gateway_route_table_name != "" ? var.transit_gateway_route_table_name : try("tgw-rt-${random_id.this.hex}", "")
   transit_gateway_vpc_attachment_name_prefix = lookup(data.aws_ec2_transit_gateway.this[0].tags, "Name", local.transit_gateway_name)
 
   # NOTE: This is the same logic as local.transit_gateway_id but we cannot reuse that local in the data source or
@@ -106,6 +101,7 @@ resource "aws_ec2_transit_gateway_route_table_association" "this" {
   for_each                       = var.create_transit_gateway_route_table_association && var.config != null ? var.config : {}
   transit_gateway_attachment_id  = each.value["transit_gateway_vpc_attachment_id"] != null ? each.value["transit_gateway_vpc_attachment_id"] : aws_ec2_transit_gateway_vpc_attachment.this[each.key]["id"]
   transit_gateway_route_table_id = local.transit_gateway_route_table_id
+  depends_on                     = [aws_ec2_transit_gateway_vpc_attachment.this]
 }
 
 # Allow traffic from the Transit Gateway to the VPC attachments
@@ -114,6 +110,8 @@ resource "aws_ec2_transit_gateway_route_table_propagation" "this" {
   for_each                       = var.create_transit_gateway_propagation && var.config != null ? var.config : {}
   transit_gateway_attachment_id  = each.value["transit_gateway_vpc_attachment_id"] != null ? each.value["transit_gateway_vpc_attachment_id"] : aws_ec2_transit_gateway_vpc_attachment.this[each.key]["id"]
   transit_gateway_route_table_id = local.transit_gateway_route_table_id
+
+  depends_on = [aws_ec2_transit_gateway_vpc_attachment.this]
 }
 
 # Static Transit Gateway routes
@@ -132,9 +130,10 @@ module "transit_gateway_route" {
 
 # Create routes in the subnets' route tables to route traffic from subnets to the Transit Gateway VPC attachments
 # Only route to VPCs of the environments defined in `route_to` attribute
+# This depends on the VPCs being deployed first..
 module "subnet_route" {
   source                  = "./modules/subnet_route"
-  for_each                = var.create_transit_gateway_vpc_attachment && var.config != null ? var.config : {}
+  for_each                = var.config != null ? var.config : {}
   transit_gateway_id      = local.transit_gateway_id
   route_table_ids         = each.value["subnet_route_table_ids"] != null ? each.value["subnet_route_table_ids"] : []
   destination_cidr_blocks = each.value["route_to_cidr_blocks"] != null ? each.value["route_to_cidr_blocks"] : ([for i in setintersection(keys(var.config), (each.value["route_to"] != null ? each.value["route_to"] : [])) : var.config[i]["vpc_cidr"]])

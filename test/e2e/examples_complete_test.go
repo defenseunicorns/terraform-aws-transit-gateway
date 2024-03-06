@@ -30,6 +30,19 @@ func TestExamplesCompleteCommon(t *testing.T) {
 		TimeBetweenRetries: 5 * time.Second,
 	}
 
+	terraformOptionsWithVPCs := &terraform.Options{
+		TerraformDir: tempFolder,
+		Targets: []string{
+			"module.vpc_prod",
+			"module.vpc_dev",
+		},
+		RetryableTerraformErrors: map[string]string{
+			".*": "Failed to apply Terraform configuration due to an error.",
+		},
+		MaxRetries:         5,
+		TimeBetweenRetries: 5 * time.Second,
+	}
+
 	// Defer the teardown
 	defer func() {
 		t.Helper()
@@ -40,7 +53,8 @@ func TestExamplesCompleteCommon(t *testing.T) {
 
 	// Set up the infra
 	teststructure.RunTestStage(t, "SETUP", func() {
-		terraform.InitAndApply(t, terraformOptions)
+		terraform.InitAndApply(t, terraformOptionsWithVPCs) // Apply the VPCs first :(
+		terraform.Apply(t, terraformOptions)                // Apply the rest of the infra :(
 	})
 
 	// Run assertions

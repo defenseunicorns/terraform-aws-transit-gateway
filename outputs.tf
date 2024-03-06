@@ -37,3 +37,19 @@ output "subnet_route_ids" {
   value       = try({ for i, o in module.subnet_route : i => o["subnet_route_ids"] }, {})
   description = "Subnet route identifiers combined with destinations"
 }
+
+output "destination_cidr_blocks" {
+  value       = try({ for i, o in module.subnet_route : i => o["destination_cidr_blocks"] }, {})
+  description = "Destination CIDR blocks"
+}
+
+output "route_config_list" {
+  value       = try({ for i, o in module.subnet_route : i => o["route_config_list"] }, {})
+  description = "Route configuration list"
+}
+
+output "route_config_map" {
+  value       = try({ for i, o in module.subnet_route : i => o["route_config_map"] }, {})
+  description = "Route configuration map"
+}
+

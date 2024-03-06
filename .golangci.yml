@@ -1,0 +1,42 @@
+run:
+  timeout: 5m
+linters:
+  enable-all: true
+  disable:
+    - depguard
+    - exhaustivestruct
+    - exhaustruct
+    - gci
+    - goerr113
+    - gofumpt
+    - goimports
+    - gomnd
+    - lll
+    - nlreturn
+    - stylecheck
+    #   - testpackage
+    - varnamelen
+    #   - wrapcheck
+    - wsl
+linters-settings:
+  funlen:
+    lines: 120
+  testifylint:
+    enable-all: false
+    enable:
+      - bool-compare
+      - compares
+      - empty
+      - error-is-as
+      - error-nil
+      - expected-actual
+      - float-compare
+      - len
+      - suite-dont-use-pkg
+      - suite-extra-assert-call
+      - suite-thelper
+      # -require-error causes errors in our e2e test patterns
+issues:
+  exclude:
+    - "G304" # Potential file inclusion via variable
+  exclude-use-default: false

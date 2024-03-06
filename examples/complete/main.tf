@@ -127,7 +127,7 @@ locals {
       subnet_ids                        = module.vpc_dev.private_subnets
       subnet_route_table_ids            = module.vpc_dev.private_route_table_ids
       route_to                          = null
-      route_to_cidr_blocks              = [module.vpc_prod.vpc_cidr_block]
+      route_to_cidr_blocks              = null
       transit_gateway_vpc_attachment_id = null
       static_routes = [
         {
@@ -158,30 +158,30 @@ module "new_transit_gateway" {
 # use existing TGW to add a new route to vpc_dev
 ################################################################################
 
-# locals {
-#   dev_tgw_route_table_only_and_existing_tgw_config = {
-#     dev = {
-#       vpc_name                          = "dev-${local.vpc_name}"
-#       vpc_id                            = module.vpc_dev.vpc_id
-#       vpc_cidr                          = module.vpc_dev.vpc_cidr_block
-#       subnet_ids                        = module.vpc_dev.private_subnets
-#       subnet_route_table_ids            = module.vpc_dev.private_route_table_ids
-#       route_to                          = []
-#       route_to_cidr_blocks              = null
-#       transit_gateway_vpc_attachment_id = module.new_transit_gateway.transit_gateway_vpc_attachment_ids["dev"]
-#       static_routes = [
-#         {
-#           blackhole              = false
-#           destination_cidr_block = module.vpc_dev.vpc_cidr_block
-#         },
-#         {
-#           blackhole              = false
-#           destination_cidr_block = "0.0.0.0/0"
-#         },
-#       ]
-#     }
-#   }
-# }
+locals {
+  dev_tgw_route_table_only_and_existing_tgw_config = {
+    dev = {
+      vpc_name                          = "dev-${local.vpc_name}"
+      vpc_id                            = module.vpc_dev.vpc_id
+      vpc_cidr                          = module.vpc_dev.vpc_cidr_block
+      subnet_ids                        = module.vpc_dev.private_subnets
+      subnet_route_table_ids            = module.vpc_dev.private_route_table_ids
+      route_to                          = []
+      route_to_cidr_blocks              = null
+      transit_gateway_vpc_attachment_id = module.new_transit_gateway.transit_gateway_vpc_attachment_ids["dev"]
+      static_routes = [
+        {
+          blackhole              = false
+          destination_cidr_block = module.vpc_dev.vpc_cidr_block
+        },
+        {
+          blackhole              = false
+          destination_cidr_block = "0.0.0.0/0"
+        },
+      ]
+    }
+  }
+}
 
 # data "aws_ec2_transit_gateway" "existing" {
 #   filter {
@@ -191,16 +191,20 @@ module "new_transit_gateway" {
 #   depends_on = [module.new_transit_gateway]
 # }
 
-# module "existing_transit_gateway_new_route_table" {
-#   source = "../.."
+module "existing_transit_gateway_new_route_table" {
+  source = "../.."
 
-#   create_transit_gateway                         = false
-#   existing_transit_gateway_id                    = data.aws_ec2_transit_gateway.existing.id
-#   create_transit_gateway_route_table             = true
-#   transit_gateway_route_table_name               = "dev-${local.vpc_name}-route-table"
-#   create_transit_gateway_vpc_attachment          = false # don't need this, already attached to the TGW
-#   create_transit_gateway_route_table_association = false
-#   create_transit_gateway_propagation             = false
+  create_transit_gateway                         = false
+  existing_transit_gateway_id                    = module.new_transit_gateway.transit_gateway_id
+  create_transit_gateway_route_table             = true
+  use_existing_transit_gateway                   = true
+  transit_gateway_route_table_name               = "dev-${local.vpc_name}-route-table"
+  create_transit_gateway_vpc_attachment          = false # don't need this, already attached to the TGW existing
+  create_transit_gateway_route_table_association = false
+  create_transit_gateway_propagation             = false
 
-#   config = local.dev_tgw_route_table_only_and_existing_tgw_config
-# }
+  config = local.dev_tgw_route_table_only_and_existing_tgw_config
+
+  depends_on = [module.new_transit_gateway]
+
+}

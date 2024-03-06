@@ -27,7 +27,7 @@ locals {
 
   # NOTE: This is the same logic as local.transit_gateway_id but we cannot reuse that local in the data source or
   # we get the dreaded error: "count" value depends on resource attributes
-  lookup_transit_gateway = ((var.existing_transit_gateway_id != null && var.existing_transit_gateway_id != "") || var.create_transit_gateway)
+  lookup_transit_gateway = var.use_existing_transit_gateway || var.create_transit_gateway
 }
 resource "aws_ec2_transit_gateway" "this" {
   count                           = var.create_transit_gateway ? 1 : 0

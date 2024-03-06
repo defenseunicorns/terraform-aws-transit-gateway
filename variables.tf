@@ -84,6 +84,12 @@ variable "existing_transit_gateway_id" {
   description = "Existing Transit Gateway ID. If provided, the module will not create a Transit Gateway but instead will use the existing one"
 }
 
+variable "use_existing_transit_gateway" {
+  type        = bool
+  default     = false
+  description = "Whether to use an existing Transit Gateway. If set to `true`, an existing Transit Gateway ID must be provided in the variable `existing_transit_gateway_id`"
+}
+
 variable "existing_transit_gateway_route_table_id" {
   type        = string
   default     = null

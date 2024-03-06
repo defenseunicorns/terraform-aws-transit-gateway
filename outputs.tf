@@ -52,4 +52,3 @@ output "route_config_map" {
   value       = try({ for i, o in module.subnet_route : i => o["route_config_map"] }, {})
   description = "Route configuration map"
 }
-

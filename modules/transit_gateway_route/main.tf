@@ -7,7 +7,7 @@ locals {
       "bh_${tostring(rc.blackhole)}"])
       ) => {
       destination_cidr_block              = rc.destination_cidr_block,
-      route_transit_gateway_attachment_id = rc.route_transit_gateway_attachment_id != "" ? rc.route_transit_gateway_attachment_id : (rc.blackhole ? null : var.vpc_transit_gateway_attachment_id),
+      route_transit_gateway_attachment_id = rc.route_transit_gateway_attachment_id != null && rc.route_transit_gateway_attachment_id != "" ? rc.route_transit_gateway_attachment_id : (rc.blackhole ? null : var.vpc_transit_gateway_attachment_id),
       blackhole                           = rc.blackhole
     }
   }

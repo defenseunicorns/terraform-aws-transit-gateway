@@ -112,10 +112,12 @@ locals {
         {
           blackhole              = false
           destination_cidr_block = "0.0.0.0/0"
+          route_transit_gateway_attachment_id = null
         },
         {
           blackhole              = false
           destination_cidr_block = module.vpc_prod.vpc_cidr_block
+          route_transit_gateway_attachment_id = null
         }
       ]
     },
@@ -133,6 +135,7 @@ locals {
         {
           blackhole              = false
           destination_cidr_block = module.vpc_dev.vpc_cidr_block
+          route_transit_gateway_attachment_id = null
         }
       ]
     }
@@ -173,12 +176,12 @@ locals {
         {
           blackhole                           = false
           destination_cidr_block              = module.vpc_dev.vpc_cidr_block
-          route_transit_gateway_attachment_id = ""
+          route_transit_gateway_attachment_id = null
         },
         {
           blackhole                           = false
           destination_cidr_block              = "0.0.0.0/0"
-          route_transit_gateway_attachment_id = ""
+          route_transit_gateway_attachment_id = null
         },
       ]
     }

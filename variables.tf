@@ -69,8 +69,9 @@ variable "config" {
     route_to_cidr_blocks              = set(string)
     transit_gateway_vpc_attachment_id = string
     static_routes = set(object({
-      blackhole              = bool
-      destination_cidr_block = string
+      blackhole                           = bool
+      destination_cidr_block              = string
+      route_transit_gateway_attachment_id = string
     }))
   }))
 

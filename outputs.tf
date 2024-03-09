@@ -52,3 +52,8 @@ output "route_config_map" {
   value       = try({ for i, o in module.subnet_route : i => o["route_config_map"] }, {})
   description = "Route configuration map"
 }
+
+output "transit_gateway_route_config" {
+  value       = try({ for i, o in module.transit_gateway_route : i => o["transit_gateway_route_config"] }, {})
+  description = "Transit Gateway route configuration"
+}

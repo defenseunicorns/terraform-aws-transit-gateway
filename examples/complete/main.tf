@@ -171,12 +171,14 @@ locals {
       transit_gateway_vpc_attachment_id = module.new_transit_gateway.transit_gateway_vpc_attachment_ids["dev"]
       static_routes = [
         {
-          blackhole              = false
-          destination_cidr_block = module.vpc_dev.vpc_cidr_block
+          blackhole                           = false
+          destination_cidr_block              = module.vpc_dev.vpc_cidr_block
+          route_transit_gateway_attachment_id = ""
         },
         {
-          blackhole              = false
-          destination_cidr_block = "0.0.0.0/0"
+          blackhole                           = false
+          destination_cidr_block              = "0.0.0.0/0"
+          route_transit_gateway_attachment_id = ""
         },
       ]
     }

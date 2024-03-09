@@ -119,11 +119,11 @@ resource "aws_ec2_transit_gateway_route_table_propagation" "this" {
 # https://docs.aws.amazon.com/vpc/latest/tgw/how-transit-gateways-work.html
 # https://docs.aws.amazon.com/vpc/latest/tgw/tgw-route-tables.html
 module "transit_gateway_route" {
-  source                         = "./modules/transit_gateway_route"
-  for_each                       = var.config != null ? var.config : {}
-  transit_gateway_attachment_id  = each.value["transit_gateway_vpc_attachment_id"] != null ? each.value["transit_gateway_vpc_attachment_id"] : aws_ec2_transit_gateway_vpc_attachment.this[each.key]["id"]
-  transit_gateway_route_table_id = local.transit_gateway_route_table_id
-  route_config                   = each.value["static_routes"] != null ? each.value["static_routes"] : []
+  source                            = "./modules/transit_gateway_route"
+  for_each                          = var.config != null ? var.config : {}
+  vpc_transit_gateway_attachment_id = each.value["transit_gateway_vpc_attachment_id"] != null ? each.value["transit_gateway_vpc_attachment_id"] : aws_ec2_transit_gateway_vpc_attachment.this[each.key]["id"]
+  transit_gateway_route_table_id    = local.transit_gateway_route_table_id
+  route_config                      = each.value["static_routes"] != null ? each.value["static_routes"] : []
 
   depends_on = [aws_ec2_transit_gateway_vpc_attachment.this, aws_ec2_transit_gateway_route_table.this]
 }

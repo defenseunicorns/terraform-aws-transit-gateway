@@ -36,7 +36,7 @@ locals {
 }
 
 module "vpc_prod" {
-  source = "git::https://github.com/defenseunicorns/terraform-aws-vpc.git?ref=v0.1.5"
+  source = "git::https://github.com/defenseunicorns/terraform-aws-vpc.git?ref=v0.1.6"
 
   name                         = "prod-${local.vpc_name}"
   vpc_cidr                     = local.vpc_prod_cidr_block
@@ -67,7 +67,7 @@ locals {
 }
 
 module "vpc_dev" {
-  source = "git::https://github.com/defenseunicorns/terraform-aws-vpc.git?ref=v0.1.5"
+  source = "git::https://github.com/defenseunicorns/terraform-aws-vpc.git?ref=v0.1.6"
 
   name                         = "dev-${local.vpc_name}"
   vpc_cidr                     = local.vpc_dev_cidr_block

@@ -22,8 +22,8 @@
 |------|--------|---------|
 | <a name="module_existing_transit_gateway_new_route_table"></a> [existing\_transit\_gateway\_new\_route\_table](#module\_existing\_transit\_gateway\_new\_route\_table) | ../.. | n/a |
 | <a name="module_new_transit_gateway"></a> [new\_transit\_gateway](#module\_new\_transit\_gateway) | ../.. | n/a |
-| <a name="module_vpc_dev"></a> [vpc\_dev](#module\_vpc\_dev) | git::https://github.com/defenseunicorns/terraform-aws-vpc.git | v0.1.5 |
-| <a name="module_vpc_prod"></a> [vpc\_prod](#module\_vpc\_prod) | git::https://github.com/defenseunicorns/terraform-aws-vpc.git | v0.1.5 |
+| <a name="module_vpc_dev"></a> [vpc\_dev](#module\_vpc\_dev) | git::https://github.com/defenseunicorns/terraform-aws-vpc.git | v0.1.6 |
+| <a name="module_vpc_prod"></a> [vpc\_prod](#module\_vpc\_prod) | git::https://github.com/defenseunicorns/terraform-aws-vpc.git | v0.1.6 |
 
 ## Resources
 

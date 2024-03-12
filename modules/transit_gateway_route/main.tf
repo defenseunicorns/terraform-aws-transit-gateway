@@ -3,7 +3,6 @@ locals {
     # change this to a join
     for rc in var.route_config : join("_", compact([
       rc.destination_cidr_block,
-      rc.route_transit_gateway_attachment_id,
       "bh_${tostring(rc.blackhole)}"])
       ) => {
       destination_cidr_block              = rc.destination_cidr_block,

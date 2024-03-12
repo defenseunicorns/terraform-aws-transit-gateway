@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.3](https://github.com/defenseunicorns/terraform-aws-transit-gateway/compare/v0.0.2...v0.0.3) (2024-03-12)
+
+
+### Bug Fixes
+
+* get rid of another for_each unknown keys error ([#14](https://github.com/defenseunicorns/terraform-aws-transit-gateway/issues/14)) ([71ab1a1](https://github.com/defenseunicorns/terraform-aws-transit-gateway/commit/71ab1a1231e4538bb9ff1d32fa36744bc521635d))
+
+
+### Miscellaneous Chores
+
+* **deps:** update all dependencies ([#12](https://github.com/defenseunicorns/terraform-aws-transit-gateway/issues/12)) ([615eb7c](https://github.com/defenseunicorns/terraform-aws-transit-gateway/commit/615eb7c463943c5ac43bb0ed1db093d656e27371))
+
 ## [0.0.2](https://github.com/defenseunicorns/terraform-aws-transit-gateway/compare/v0.0.1...v0.0.2) (2024-03-09)
 
 

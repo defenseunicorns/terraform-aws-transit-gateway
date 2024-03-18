@@ -1,6 +1,6 @@
 module github.com/defenseunicorns/terraform-aws-transit-gateway
 
-go 1.21.5
+go 1.22.1
 
 require (
 	github.com/defenseunicorns/delivery_aws_iac_utils v0.0.5

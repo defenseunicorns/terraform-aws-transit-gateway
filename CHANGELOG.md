@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.4](https://github.com/defenseunicorns/terraform-aws-transit-gateway/compare/v0.0.3...v0.0.4) (2024-03-25)
+
+
+### Miscellaneous Chores
+
+* **deps:** update all dependencies ([#15](https://github.com/defenseunicorns/terraform-aws-transit-gateway/issues/15)) ([e46dc48](https://github.com/defenseunicorns/terraform-aws-transit-gateway/commit/e46dc4845b44d9104413af48d0026e2a33c91abd))
+* **deps:** update all dependencies ([#17](https://github.com/defenseunicorns/terraform-aws-transit-gateway/issues/17)) ([d9a0d69](https://github.com/defenseunicorns/terraform-aws-transit-gateway/commit/d9a0d69f6fbc4f72b2b5e323517c2c375f46a447))
+
 ## [0.0.3](https://github.com/defenseunicorns/terraform-aws-transit-gateway/compare/v0.0.2...v0.0.3) (2024-03-12)
 
 

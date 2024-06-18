@@ -1,6 +1,6 @@
 # subnet_route
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGINNING OF PRE-COMMIT-OPENTOFU DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
@@ -42,4 +42,4 @@ No modules.
 | <a name="output_route_config_list"></a> [route\_config\_list](#output\_route\_config\_list) | Route configuration list |
 | <a name="output_route_config_map"></a> [route\_config\_map](#output\_route\_config\_map) | Route configuration map |
 | <a name="output_subnet_route_ids"></a> [subnet\_route\_ids](#output\_subnet\_route\_ids) | Subnet route identifiers combined with destinations |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END OF PRE-COMMIT-OPENTOFU DOCS HOOK -->

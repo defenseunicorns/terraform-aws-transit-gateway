@@ -1,6 +1,6 @@
 # complete
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGINNING OF PRE-COMMIT-OPENTOFU DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
@@ -47,4 +47,4 @@
 | <a name="output_debug"></a> [debug](#output\_debug) | n/a |
 | <a name="output_new_transit_gateway"></a> [new\_transit\_gateway](#output\_new\_transit\_gateway) | n/a |
 | <a name="output_new_transit_gateway_config"></a> [new\_transit\_gateway\_config](#output\_new\_transit\_gateway\_config) | n/a |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END OF PRE-COMMIT-OPENTOFU DOCS HOOK -->

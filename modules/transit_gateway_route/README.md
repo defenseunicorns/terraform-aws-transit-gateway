@@ -1,6 +1,6 @@
 # transit_gateway_route
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGINNING OF PRE-COMMIT-OPENTOFU DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
@@ -38,4 +38,4 @@ No modules.
 |------|-------------|
 | <a name="output_transit_gateway_route_config"></a> [transit\_gateway\_route\_config](#output\_transit\_gateway\_route\_config) | Transit Gateway route configuration |
 | <a name="output_transit_gateway_route_ids"></a> [transit\_gateway\_route\_ids](#output\_transit\_gateway\_route\_ids) | Transit Gateway route identifiers combined with destinations |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END OF PRE-COMMIT-OPENTOFU DOCS HOOK -->

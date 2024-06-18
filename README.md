@@ -1,6 +1,6 @@
 # terraform-aws-transit-gateway
 Repo provides module to create (or not, if already existing) transit gateway(s), handle attachments, and routes, and more
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGINNING OF PRE-COMMIT-OPENTOFU DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
@@ -80,4 +80,4 @@ Repo provides module to create (or not, if already existing) transit gateway(s),
 | <a name="output_transit_gateway_route_ids"></a> [transit\_gateway\_route\_ids](#output\_transit\_gateway\_route\_ids) | Transit Gateway route identifiers combined with destinations |
 | <a name="output_transit_gateway_route_table_id"></a> [transit\_gateway\_route\_table\_id](#output\_transit\_gateway\_route\_table\_id) | Transit Gateway route table ID |
 | <a name="output_transit_gateway_vpc_attachment_ids"></a> [transit\_gateway\_vpc\_attachment\_ids](#output\_transit\_gateway\_vpc\_attachment\_ids) | Transit Gateway VPC attachment IDs |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END OF PRE-COMMIT-OPENTOFU DOCS HOOK -->

@@ -32,7 +32,8 @@ func TestExamplesCompleteCommon(t *testing.T) {
 	}
 
 	terraformOptionsWithVPCs := &terraform.Options{
-		TerraformDir: tempFolder,
+		TerraformBinary: "tofu",
+		TerraformDir:    tempFolder,
 		Targets: []string{
 			"module.vpc_prod",
 			"module.vpc_dev",

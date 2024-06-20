@@ -83,7 +83,7 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "this" {
   tags = merge(
     local.tags,
     {
-      Name = join("_", compact([local.transit_gateway_vpc_attachment_name_prefix, coalesce(each.value["vpc_name"], each.value["vpc_id"])]))
+      Name = coalesce(each.value["transit_gateway_vpc_attachment_name_tag"], join("_", compact([local.transit_gateway_vpc_attachment_name_prefix, coalesce(each.value["vpc_name"], each.value["vpc_id"])])))
     }
   )
 

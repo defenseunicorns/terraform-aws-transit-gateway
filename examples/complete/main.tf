@@ -100,14 +100,15 @@ module "vpc_dev" {
 locals {
   new_transit_gateway_config = {
     prod = {
-      vpc_name                          = "prod-${local.vpc_name}"
-      vpc_id                            = module.vpc_prod.vpc_id
-      vpc_cidr                          = module.vpc_prod.vpc_cidr_block
-      subnet_ids                        = module.vpc_prod.private_subnets
-      subnet_route_table_ids            = module.vpc_prod.private_route_table_ids
-      route_to                          = null
-      route_to_cidr_blocks              = [module.vpc_dev.vpc_cidr_block]
-      transit_gateway_vpc_attachment_id = null
+      vpc_name                                = "prod-${local.vpc_name}"
+      vpc_id                                  = module.vpc_prod.vpc_id
+      vpc_cidr                                = module.vpc_prod.vpc_cidr_block
+      subnet_ids                              = module.vpc_prod.private_subnets
+      subnet_route_table_ids                  = module.vpc_prod.private_route_table_ids
+      route_to                                = null
+      route_to_cidr_blocks                    = [module.vpc_dev.vpc_cidr_block]
+      transit_gateway_vpc_attachment_id       = null
+      transit_gateway_vpc_attachment_name_tag = null
       static_routes = [
         {
           blackhole                           = false
@@ -123,14 +124,15 @@ locals {
     },
 
     dev = {
-      vpc_name                          = "dev-${local.vpc_name}"
-      vpc_id                            = module.vpc_dev.vpc_id
-      vpc_cidr                          = module.vpc_dev.vpc_cidr_block
-      subnet_ids                        = module.vpc_dev.private_subnets
-      subnet_route_table_ids            = module.vpc_dev.private_route_table_ids
-      route_to                          = null
-      route_to_cidr_blocks              = null
-      transit_gateway_vpc_attachment_id = null
+      vpc_name                                = "dev-${local.vpc_name}"
+      vpc_id                                  = module.vpc_dev.vpc_id
+      vpc_cidr                                = module.vpc_dev.vpc_cidr_block
+      subnet_ids                              = module.vpc_dev.private_subnets
+      subnet_route_table_ids                  = module.vpc_dev.private_route_table_ids
+      route_to                                = null
+      route_to_cidr_blocks                    = null
+      transit_gateway_vpc_attachment_id       = null
+      transit_gateway_vpc_attachment_name_tag = null
       static_routes = [
         {
           blackhole                           = false
@@ -164,14 +166,15 @@ module "new_transit_gateway" {
 locals {
   dev_tgw_route_table_only_and_existing_tgw_config = {
     dev = {
-      vpc_name                          = "dev-${local.vpc_name}"
-      vpc_id                            = module.vpc_dev.vpc_id
-      vpc_cidr                          = module.vpc_dev.vpc_cidr_block
-      subnet_ids                        = module.vpc_dev.private_subnets
-      subnet_route_table_ids            = module.vpc_dev.private_route_table_ids
-      route_to                          = []
-      route_to_cidr_blocks              = null
-      transit_gateway_vpc_attachment_id = module.new_transit_gateway.transit_gateway_vpc_attachment_ids["dev"]
+      vpc_name                                = "dev-${local.vpc_name}"
+      vpc_id                                  = module.vpc_dev.vpc_id
+      vpc_cidr                                = module.vpc_dev.vpc_cidr_block
+      subnet_ids                              = module.vpc_dev.private_subnets
+      subnet_route_table_ids                  = module.vpc_dev.private_route_table_ids
+      route_to                                = []
+      route_to_cidr_blocks                    = null
+      transit_gateway_vpc_attachment_id       = module.new_transit_gateway.transit_gateway_vpc_attachment_ids["dev"]
+      transit_gateway_vpc_attachment_name_tag = null
       static_routes = [
         {
           blackhole                           = false

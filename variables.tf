@@ -60,14 +60,15 @@ variable "vpc_attachment_ipv6_support" {
 
 variable "config" {
   type = map(object({
-    vpc_name                          = string
-    vpc_id                            = string
-    vpc_cidr                          = string
-    subnet_ids                        = set(string)
-    subnet_route_table_ids            = set(string)
-    route_to                          = set(string)
-    route_to_cidr_blocks              = set(string)
-    transit_gateway_vpc_attachment_id = string
+    vpc_name                                = string
+    vpc_id                                  = string
+    vpc_cidr                                = string
+    subnet_ids                              = set(string)
+    subnet_route_table_ids                  = set(string)
+    route_to                                = set(string)
+    route_to_cidr_blocks                    = set(string)
+    transit_gateway_vpc_attachment_id       = string
+    transit_gateway_vpc_attachment_name_tag = string
     static_routes = set(object({
       blackhole                           = bool
       destination_cidr_block              = string

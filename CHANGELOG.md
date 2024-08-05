@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.5](https://github.com/defenseunicorns/terraform-aws-transit-gateway/compare/v0.0.4...v0.0.5) (2024-08-05)
+
+
+### Miscellaneous Chores
+
+* **deps:** update all dependencies ([#30](https://github.com/defenseunicorns/terraform-aws-transit-gateway/issues/30)) ([9fa5be5](https://github.com/defenseunicorns/terraform-aws-transit-gateway/commit/9fa5be57907b09c223cbf0d9e3821a87d14a6371))
+* **deps:** update all dependencies ([#32](https://github.com/defenseunicorns/terraform-aws-transit-gateway/issues/32)) ([da722c5](https://github.com/defenseunicorns/terraform-aws-transit-gateway/commit/da722c5a04ebf6afaa3a79eb62e7acc06fde6dd8))
+* **deps:** update all dependencies ([#35](https://github.com/defenseunicorns/terraform-aws-transit-gateway/issues/35)) ([d97e6a1](https://github.com/defenseunicorns/terraform-aws-transit-gateway/commit/d97e6a199ef1e4032d96ea5017e66462bb643578))
+* **deps:** update all dependencies ([#37](https://github.com/defenseunicorns/terraform-aws-transit-gateway/issues/37)) ([d1842af](https://github.com/defenseunicorns/terraform-aws-transit-gateway/commit/d1842af306756eaf0bee20eec20a644771cb020b))
+* **deps:** update all dependencies ([#38](https://github.com/defenseunicorns/terraform-aws-transit-gateway/issues/38)) ([20e467e](https://github.com/defenseunicorns/terraform-aws-transit-gateway/commit/20e467e1e04fde85a1d8df6fce3fd4be25015584))
+* **deps:** update all dependencies ([#39](https://github.com/defenseunicorns/terraform-aws-transit-gateway/issues/39)) ([88a9dda](https://github.com/defenseunicorns/terraform-aws-transit-gateway/commit/88a9ddae01af3582a45701ea112ed3096f9c9566))
+* **deps:** update pre-commit hook renovatebot/pre-commit-hooks to v37.421.5 ([#33](https://github.com/defenseunicorns/terraform-aws-transit-gateway/issues/33)) ([ab6cd1e](https://github.com/defenseunicorns/terraform-aws-transit-gateway/commit/ab6cd1e39c86dd2f23dff26b3e9585a13abe67f5))
+* **deps:** update pre-commit hook renovatebot/pre-commit-hooks to v37.425.1 ([#34](https://github.com/defenseunicorns/terraform-aws-transit-gateway/issues/34)) ([527931d](https://github.com/defenseunicorns/terraform-aws-transit-gateway/commit/527931d5057d4f7b2e315ea15e48d021341408ed))
+* **deps:** update pre-commit hook renovatebot/pre-commit-hooks to v37.431.5 ([#36](https://github.com/defenseunicorns/terraform-aws-transit-gateway/issues/36)) ([4ae9408](https://github.com/defenseunicorns/terraform-aws-transit-gateway/commit/4ae9408489dd39702facc9934d77d938db2d4c6a))
+
 ## [0.0.4](https://github.com/defenseunicorns/terraform-aws-transit-gateway/compare/v0.0.3...v0.0.4) (2024-06-20)
 
 

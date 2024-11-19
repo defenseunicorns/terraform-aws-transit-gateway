@@ -28,7 +28,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_route_config"></a> [route\_config](#input\_route\_config) | Route config | <pre>list(object({<br>    blackhole                           = bool<br>    destination_cidr_block              = string<br>    route_transit_gateway_attachment_id = string<br>  }))</pre> | n/a | yes |
+| <a name="input_route_config"></a> [route\_config](#input\_route\_config) | Route config | <pre>list(object({<br/>    blackhole                           = bool<br/>    destination_cidr_block              = string<br/>    route_transit_gateway_attachment_id = string<br/>  }))</pre> | n/a | yes |
 | <a name="input_transit_gateway_route_table_id"></a> [transit\_gateway\_route\_table\_id](#input\_transit\_gateway\_route\_table\_id) | Transit Gateway route table ID | `string` | n/a | yes |
 | <a name="input_vpc_transit_gateway_attachment_id"></a> [vpc\_transit\_gateway\_attachment\_id](#input\_vpc\_transit\_gateway\_attachment\_id) | Transit Gateway VPC attachment ID | `string` | `""` | no |
 
